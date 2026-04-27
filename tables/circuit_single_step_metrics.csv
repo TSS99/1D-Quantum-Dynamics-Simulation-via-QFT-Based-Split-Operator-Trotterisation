@@ -1,0 +1,3 @@
+system,N,n_qubits,dt,single_step_1q_count,single_step_2q_count,single_step_depth,transform,synthesis_model
+harmonic_oscillator,64,6,0.031415926535897934,171,264,312,periodic_QFT,Qiskit_exact_generic_DiagonalGate_small_N_upper_bound
+infinite_well,64,6,0.008571428571428572,235,142,188,Dirichlet_quantum_sine_transform,analytical_all_to_all_QST_via_QFT_extension_estimate
