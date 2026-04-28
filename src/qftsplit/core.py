@@ -22,23 +22,46 @@ def locate_project_root(start: Path | None = None) -> Path:
 
 
 def configure_matplotlib() -> None:
-    """Apply a compact EPJ Plus-friendly plotting style."""
+    """Apply a polished, publication-quality plotting style for EPJ Plus."""
     plt.rcParams.update(
         {
-            "font.family": "DejaVu Sans",
-            "font.size": 8,
-            "axes.labelsize": 8,
-            "axes.titlesize": 8.5,
-            "legend.fontsize": 7,
-            "xtick.labelsize": 7,
-            "ytick.labelsize": 7,
-            "mathtext.fontset": "dejavusans",
-            "axes.linewidth": 0.8,
-            "lines.linewidth": 1.6,
+            # ── Typography ──────────────────────────────────────────────
+            "font.family": "serif",
+            "font.serif": ["Computer Modern Roman", "CMU Serif", "Times New Roman", "DejaVu Serif"],
+            "font.size": 10,
+            "axes.labelsize": 11,
+            "axes.titlesize": 12,
+            "axes.titleweight": "bold",
+            "legend.fontsize": 9,
+            "xtick.labelsize": 9,
+            "ytick.labelsize": 9,
+            "mathtext.fontset": "cm",
+            # ── Spines & ticks ──────────────────────────────────────────
+            "axes.linewidth": 0.9,
             "axes.spines.top": False,
             "axes.spines.right": False,
+            "xtick.direction": "in",
+            "ytick.direction": "in",
+            "xtick.major.size": 4,
+            "ytick.major.size": 4,
+            "xtick.minor.size": 2.5,
+            "ytick.minor.size": 2.5,
+            "xtick.major.width": 0.8,
+            "ytick.major.width": 0.8,
+            # ── Lines & markers ─────────────────────────────────────────
+            "lines.linewidth": 1.8,
+            "lines.markersize": 5,
+            # ── Figure background ───────────────────────────────────────
             "figure.facecolor": "white",
             "savefig.facecolor": "white",
+            "savefig.transparent": False,
+            # ── Grid (off by default; turned on per-plot) ───────────────
+            "axes.grid": False,
+            # ── Legend ──────────────────────────────────────────────────
+            "legend.frameon": True,
+            "legend.framealpha": 0.85,
+            "legend.edgecolor": "0.80",
+            "legend.fancybox": True,
         }
     )
 
@@ -49,11 +72,15 @@ def mm_to_inches(mm: float) -> float:
 
 def save_publication_figure(fig: plt.Figure, figures_dir: Path, stem: str) -> tuple[Path, Path]:
     """Save a figure as both PNG and PDF and verify the files exist."""
+    from matplotlib.backends.backend_pdf import PdfPages
+
     figures_dir.mkdir(parents=True, exist_ok=True)
     png_path = figures_dir / f"{stem}.png"
     pdf_path = figures_dir / f"{stem}.pdf"
-    fig.savefig(png_path, dpi=600, bbox_inches="tight", pad_inches=0.02)
-    fig.savefig(pdf_path, dpi=600, bbox_inches="tight", pad_inches=0.02)
+    fig.savefig(png_path, dpi=600, bbox_inches="tight", pad_inches=0.05)
+    # Use PdfPages to ensure correct page orientation (no 90° rotation)
+    with PdfPages(str(pdf_path)) as pdf:
+        pdf.savefig(fig, dpi=600, bbox_inches="tight", pad_inches=0.05)
     if not png_path.exists() or not pdf_path.exists():
         raise FileNotFoundError(f"Failed to save {stem} in both PNG and PDF formats.")
     return png_path, pdf_path
@@ -537,55 +564,142 @@ def plot_density_snapshots(
 ) -> plt.Figure:
     """Plot representative density snapshots comparing reference and numerical evolution."""
     indices = np.unique(np.linspace(0, len(times) - 1, snapshot_count, dtype=int))
+    n_panels = len(indices)
+    panel_height = 1.45  # inches per panel – enough for clear labels
     fig, axes = plt.subplots(
-        len(indices),
+        n_panels,
         1,
-        figsize=(mm_to_inches(85.0), 1.15 * len(indices) + 0.25),
+        figsize=(mm_to_inches(120.0), panel_height * n_panels + 0.5),
         sharex=True,
         constrained_layout=True,
     )
     axes = np.atleast_1d(axes)
-    ref_color = "#1d3557"
-    split_color = "#d95f02"
+
+    # Curated colour pair – high contrast and colour-blind safe
+    ref_color = "#264653"   # dark teal
+    split_color = "#e76f51" # warm coral
 
     for axis, index in zip(axes, indices):
-        axis.plot(x, np.abs(reference_states[index]) ** 2, color=ref_color, label="Analytical reference")
-        axis.plot(x, np.abs(split_states[index]) ** 2, color=split_color, linestyle="--", label="Spectral split operator")
-        axis.set_ylabel(r"$|\psi(x,t)|^2$")
+        rho_ref = np.abs(reference_states[index]) ** 2
+        rho_split = np.abs(split_states[index]) ** 2
+
+        axis.plot(x, rho_ref, color=ref_color, linewidth=1.8,
+                  label="Analytical reference")
+        axis.plot(x, rho_split, color=split_color, linewidth=1.6,
+                  linestyle="--", dashes=(4, 2.5),
+                  label="Spectral split operator")
+        # Subtle fill under the reference curve
+        axis.fill_between(x, rho_ref, alpha=0.08, color=ref_color)
+
+        axis.set_ylabel(r"$|\psi(x,\,t)|^2$", labelpad=6)
+        axis.tick_params(axis="both", which="both", direction="in")
+
+        # Time annotation badge
         axis.text(
-            0.02,
-            0.84,
-            rf"$t={times[index]:.2f}$",
+            0.025,
+            0.85,
+            rf"$t = {times[index]:.2f}$",
             transform=axis.transAxes,
-            fontsize=7,
-            bbox={"boxstyle": "round,pad=0.2", "facecolor": "white", "edgecolor": "0.8"},
+            fontsize=9,
+            bbox={"boxstyle": "round,pad=0.3",
+                  "facecolor": "#f8f9fa",
+                  "edgecolor": "#adb5bd",
+                  "linewidth": 0.7},
         )
 
-    axes[0].set_title(title)
-    axes[0].legend(loc="upper right", frameon=False)
-    axes[-1].set_xlabel(r"$x$")
+    axes[0].set_title(title, pad=10)
+    axes[0].legend(
+        loc="upper right",
+        fontsize=8.5,
+        frameon=True,
+        framealpha=0.9,
+        edgecolor="0.80",
+        fancybox=True,
+    )
+    axes[-1].set_xlabel(r"$x$", labelpad=4)
     return fig
 
 
 def plot_fidelity(times: Array, fidelities: Array, title: str) -> plt.Figure:
     """Plot fidelity versus time over the simulated interval."""
-    fig, axis = plt.subplots(figsize=(mm_to_inches(85.0), mm_to_inches(58.0)), constrained_layout=True)
-    axis.plot(times, fidelities, color="#2a9d8f", marker="o", markersize=2.4, linewidth=1.5)
-    axis.set_xlabel(r"$t$")
-    axis.set_ylabel("Fidelity")
-    axis.set_title(title)
-    axis.set_ylim(max(0.0, float(fidelities.min()) - 0.02), 1.01)
-    axis.grid(alpha=0.25, linewidth=0.4)
+    fig, axis = plt.subplots(figsize=(mm_to_inches(120.0), mm_to_inches(75.0)), constrained_layout=True)
+
+    # Thin markers for dense datasets (>50 points)
+    n_pts = len(fidelities)
+    mark_every = max(1, n_pts // 30) if n_pts > 50 else 1
+
+    axis.plot(
+        times, fidelities,
+        color="#1a5276",
+        linewidth=2.5,
+        marker="o",
+        markersize=5,
+        markerfacecolor="#c0392b",
+        markeredgecolor="#1a5276",
+        markeredgewidth=0.6,
+        markevery=mark_every,
+        zorder=3,
+    )
+    axis.set_xlabel(r"$t$", labelpad=4)
+    axis.set_ylabel(r"Fidelity, $\mathcal{F}$", labelpad=6)
+    axis.set_title(title, pad=10)
+
+    f_min = float(np.min(fidelities))
+    f_max = float(np.max(fidelities))
+    f_spread = f_max - f_min
+
+    # Adaptive y-axis: if fidelity is near-perfect (spread < 1e-3),
+    # use a tight centered window so the curve is clearly visible
+    if f_spread < 1e-3:
+        f_centre = 0.5 * (f_min + f_max)
+        half_win = max(5e-4, f_spread * 5)
+        y_lo = f_centre - half_win
+        y_hi = f_centre + half_win
+    else:
+        y_lo = max(0.0, f_min - 0.005)
+        y_hi = 1.002
+    axis.set_ylim(y_lo, y_hi)
+
+    # Use plain decimal tick formatting (no scientific offset)
+    axis.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.4f}"))
+
+    axis.grid(True, alpha=0.20, linewidth=0.5, linestyle="--")
+    axis.tick_params(axis="both", which="both", direction="in")
     return fig
 
 
 def plot_convergence(df: pd.DataFrame, x_column: str, y_column: str, title: str, xlabel: str) -> plt.Figure:
-    fig, axis = plt.subplots(figsize=(mm_to_inches(85.0), mm_to_inches(58.0)), constrained_layout=True)
-    axis.plot(df[x_column], df[y_column], marker="o", color="#386641")
-    axis.set_xlabel(xlabel)
-    axis.set_ylabel(y_column.replace("_", " ").title())
-    axis.set_title(title)
-    axis.grid(alpha=0.25, linewidth=0.4)
+    fig, axis = plt.subplots(figsize=(mm_to_inches(120.0), mm_to_inches(75.0)), constrained_layout=True)
+    axis.plot(
+        df[x_column], df[y_column],
+        marker="o",
+        markersize=7,
+        markerfacecolor="#52796f",
+        markeredgecolor="white",
+        markeredgewidth=0.8,
+        color="#386641",
+        linewidth=2.0,
+        zorder=3,
+    )
+    axis.set_xlabel(xlabel, labelpad=4)
+
+    # Produce a readable y-label from the column name
+    y_label = y_column.replace("_", " ").title()
+    axis.set_ylabel(y_label, labelpad=6)
+    axis.set_title(title, pad=10)
+
+    # Disable the ugly default scientific offset (e.g. "1e-5+9.999e-1")
+    axis.ticklabel_format(axis="y", useOffset=False)
+    y_vals = df[y_column].values
+    # For large integer-scale values (gate counts etc.), use comma formatting
+    if y_vals.max() > 100:
+        axis.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:,.0f}"))
+    # For values very close to 1 (fidelities), show enough decimals
+    elif y_vals.min() > 0.9 and y_vals.max() < 1.1:
+        axis.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.6f}"))
+
+    axis.grid(True, alpha=0.20, linewidth=0.5, linestyle="--")
+    axis.tick_params(axis="both", which="both", direction="in")
     return fig
 
 
@@ -662,6 +776,56 @@ def build_periodic_resource_circuit(position_phase_half: Array, momentum_phase: 
     return circuit
 
 
+def build_infinite_well_circuit(grid_size: int, length: float, mass: float, hbar: float, dt: float):
+    """Build one logical Dirichlet sine-transform (QST) split step for resource accounting.
+
+    The infinite-well split step has the structure::
+
+        QST  ──►  T(dt)  ──►  QST⁻¹
+
+    where QST is implemented via a QFT on an extended (n+2)-qubit register followed by
+    odd-reflection symmetry enforcement, and T(dt) is the kinetic phase diagonal.
+    This function returns a *logical* circuit whose gates are labelled for readability
+    so it can be drawn cleanly with ``draw_and_save_circuit``.
+    """
+    from qiskit import QuantumCircuit
+    from qiskit.circuit.library import DiagonalGate, QFTGate
+
+    n_qubits = int(np.log2(grid_size))   # base register (e.g. 6 for N=64)
+    ext_qubits = n_qubits + 2            # QFT extension size for QST
+
+    # Kinetic phase diagonal in sine-mode basis
+    kinetic_energies = sine_mode_energies(grid_size, length=length, mass=mass, hbar=hbar)
+    momentum_phase = np.exp(-1j * kinetic_energies * dt / hbar)
+
+    # QST sub-gate: QFT⁻¹ on the full ext_qubits register, labelled "QST"
+    qst_sub = QuantumCircuit(ext_qubits, name="QST")
+    qst_sub.append(QFTGate(ext_qubits).inverse(), range(ext_qubits))
+    qst_gate = qst_sub.to_gate(label="QST")
+
+    # QST† sub-gate: QFT on the full ext_qubits register, labelled "QST†"
+    qst_inv_sub = QuantumCircuit(ext_qubits, name="QST\u2020")
+    qst_inv_sub.append(QFTGate(ext_qubits), range(ext_qubits))
+    qst_inv_gate = qst_inv_sub.to_gate(label="QST\u2020")
+
+    # Top-level circuit on ext_qubits wires (full QST register)
+    circuit = QuantumCircuit(ext_qubits, name="infinite_well_sine_split_step")
+
+    # 1. QST forward
+    circuit.append(qst_gate, range(ext_qubits))
+    circuit.barrier()
+
+    # 2. Kinetic phase T(dt) on first n_qubits (sine-mode register)
+    circuit.append(DiagonalGate(list(momentum_phase)), range(n_qubits))
+    circuit.barrier()
+
+    # 3. QST⁻¹ inverse
+    circuit.append(qst_inv_gate, range(ext_qubits))
+
+    return circuit
+
+
+
 def transpile_and_extract_metrics(circuit, basis_gates: list[str]) -> tuple[object, dict, dict]:
     """Transpile a circuit and extract one-/two-qubit counts plus gate breakdown."""
     from qiskit import transpile
@@ -704,25 +868,51 @@ def draw_and_save_circuit(circuit, figures_dir: Path, stem: str, scale: float, f
 
 
 def plot_gate_counts(resource_df: pd.DataFrame, title: str) -> plt.Figure:
-    fig, axis = plt.subplots(figsize=(mm_to_inches(85.0), mm_to_inches(58.0)), constrained_layout=True)
-    axis.plot(resource_df["r"], resource_df["total_1q_count"], marker="o", color="#277da1", label="1-qubit gates")
-    axis.plot(resource_df["r"], resource_df["total_2q_count"], marker="s", color="#d62828", label="2-qubit gates")
-    axis.set_xlabel("Trotter steps, r")
-    axis.set_ylabel("Total gate count")
-    axis.set_title(title)
-    axis.grid(alpha=0.25, linewidth=0.4)
-    axis.legend(frameon=False)
+    fig, axis = plt.subplots(figsize=(mm_to_inches(120.0), mm_to_inches(75.0)), constrained_layout=True)
+    axis.plot(
+        resource_df["r"], resource_df["total_1q_count"],
+        marker="o", markersize=7, markeredgecolor="white", markeredgewidth=0.6,
+        color="#277da1", linewidth=2.0, label="1-qubit gates", zorder=3,
+    )
+    axis.plot(
+        resource_df["r"], resource_df["total_2q_count"],
+        marker="s", markersize=7, markeredgecolor="white", markeredgewidth=0.6,
+        color="#d62828", linewidth=2.0, label="2-qubit gates", zorder=3,
+    )
+    axis.set_xlabel(r"Trotter steps, $r$", labelpad=4)
+    axis.set_ylabel("Total gate count", labelpad=6)
+    axis.set_title(title, pad=10)
+    axis.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:,.0f}"))
+    axis.grid(True, alpha=0.20, linewidth=0.5, linestyle="--")
+    axis.tick_params(axis="both", which="both", direction="in")
+    axis.legend(frameon=True, framealpha=0.9, edgecolor="0.80", fancybox=True)
     return fig
 
 
 def plot_fidelity_vs_gate_count(resource_df: pd.DataFrame, x_column: str, xlabel: str, title: str) -> plt.Figure:
-    fig, axis = plt.subplots(figsize=(mm_to_inches(85.0), mm_to_inches(58.0)), constrained_layout=True)
-    axis.plot(resource_df[x_column], resource_df["final_time_fidelity"], marker="o", color="#6a4c93", linewidth=1.5)
-    axis.set_xlabel(xlabel)
-    axis.set_ylabel(r"Final-time fidelity at $t=t_{\max}$")
-    axis.set_title(title)
-    axis.set_ylim(max(0.0, float(resource_df["final_time_fidelity"].min()) - 0.02), 1.01)
-    axis.grid(alpha=0.25, linewidth=0.4)
+    fig, axis = plt.subplots(figsize=(mm_to_inches(120.0), mm_to_inches(75.0)), constrained_layout=True)
+    axis.plot(
+        resource_df[x_column], resource_df["final_time_fidelity"],
+        marker="o",
+        markersize=7,
+        markerfacecolor="#7b2cbf",
+        markeredgecolor="white",
+        markeredgewidth=0.8,
+        color="#6a4c93",
+        linewidth=2.0,
+        zorder=3,
+    )
+    axis.set_xlabel(xlabel, labelpad=4)
+    axis.set_ylabel(r"Final-time fidelity at $t = t_{\mathrm{max}}$", labelpad=6)
+    axis.set_title(title, pad=10)
+
+    f_min = float(resource_df["final_time_fidelity"].min())
+    axis.set_ylim(max(0.0, f_min - 0.005), 1.002)
+    axis.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.4f}"))
+    axis.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:,.0f}"))
+
+    axis.grid(True, alpha=0.20, linewidth=0.5, linestyle="--")
+    axis.tick_params(axis="both", which="both", direction="in")
     return fig
 
 

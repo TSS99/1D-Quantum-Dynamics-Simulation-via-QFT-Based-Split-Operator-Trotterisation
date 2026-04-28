@@ -52,6 +52,7 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from qftsplit.core import (
+    build_infinite_well_circuit,
     build_periodic_resource_circuit,
     configure_matplotlib,
     dirichlet_midpoint_grid,
@@ -722,24 +723,54 @@ write_notebook(
             r"""
             draw_and_save_circuit(harmonic_logical, FIGURES_DIR, "harmonic_single_step_logical_circuit", scale=0.75, fold=40)
             draw_and_save_circuit(harmonic_transpiled, FIGURES_DIR, "harmonic_single_step_transpiled_circuit", scale=0.55, fold=50)
+            
+            infinite_well_logical = build_infinite_well_circuit(grid_size=N, length=well_L, mass=m, hbar=hbar, dt=dt_w)
+            draw_and_save_circuit(infinite_well_logical, FIGURES_DIR, "infinite_well_single_step_logical_circuit_qiskit", scale=0.75, fold=40)
+
 
             def save_block_diagram(stem: str, title: str, blocks: list[str]) -> None:
-                fig, axis = plt.subplots(figsize=(8.5, 1.6), constrained_layout=True)
+                fig, axis = plt.subplots(figsize=(10.0, 2.0), constrained_layout=True)
                 axis.set_axis_off()
-                x_positions = np.linspace(0.08, 0.92, len(blocks))
+                
+                box_style = {
+                    "boxstyle": "round,pad=0.6",
+                    "facecolor": "#ebf5fb", 
+                    "edgecolor": "#2874a6", 
+                    "linewidth": 2.0,
+                }
+                
+                if len(blocks) == 3:
+                    x_positions = np.linspace(0.25, 0.75, len(blocks))
+                else:
+                    x_positions = np.linspace(0.12, 0.88, len(blocks))
+                
                 for x_pos, label in zip(x_positions, blocks):
                     axis.text(
-                        x_pos,
-                        0.5,
-                        label,
-                        ha="center",
-                        va="center",
-                        fontsize=9,
-                        bbox={"boxstyle": "round,pad=0.35", "facecolor": "white", "edgecolor": "0.25"},
+                        x_pos, 0.5, label,
+                        ha="center", va="center",
+                        fontsize=13, fontweight="bold", color="#1b4f72",
+                        bbox=box_style,
                     )
-                for left, right in zip(x_positions[:-1], x_positions[1:]):
-                    axis.annotate("", xy=(right - 0.055, 0.5), xytext=(left + 0.055, 0.5), arrowprops={"arrowstyle": "->", "lw": 1.0})
-                axis.set_title(title, fontsize=9)
+                    
+                for i in range(len(blocks) - 1):
+                    left_text = blocks[i]
+                    right_text = blocks[i+1]
+                    
+                    left_hw = max(0.04, len(left_text) * 0.005 + 0.03)
+                    right_hw = max(0.04, len(right_text) * 0.005 + 0.03)
+                    
+                    axis.annotate(
+                        "", 
+                        xy=(x_positions[i+1] - right_hw, 0.5), 
+                        xytext=(x_positions[i] + left_hw, 0.5), 
+                        arrowprops={
+                            "arrowstyle": "-|>,head_length=0.8,head_width=0.4", 
+                            "lw": 2.5, 
+                            "color": "#2874a6"
+                        }
+                    )
+                    
+                axis.set_title(title, fontsize=15, fontweight="bold", pad=15)
                 save_publication_figure(fig, FIGURES_DIR, stem)
                 plt.close(fig)
 
