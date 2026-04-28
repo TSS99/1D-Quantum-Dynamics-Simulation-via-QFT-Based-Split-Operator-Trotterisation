@@ -728,7 +728,8 @@ write_notebook(
             draw_and_save_circuit(infinite_well_logical, FIGURES_DIR, "infinite_well_single_step_logical_circuit_qiskit", scale=0.75, fold=40)
             
             infinite_well_transpiled, _, _ = transpile_and_extract_metrics(infinite_well_logical, basis_gates)
-            draw_and_save_circuit(infinite_well_transpiled, FIGURES_DIR, "infinite_well_single_step_transpiled_circuit", scale=0.55, fold=50)
+            draw_and_save_circuit(infinite_well_transpiled, FIGURES_DIR, "infinite_well_single_step_transpiled_circuit_qiskit", scale=0.55, fold=50)
+
 
 
             def save_block_diagram(stem: str, title: str, blocks: list[str]) -> None:
