@@ -3,8 +3,9 @@ harmonic_oscillator,barrier,4
 harmonic_oscillator,cx,264
 harmonic_oscillator,rx,6
 harmonic_oscillator,ry,12
-harmonic_oscillator,rz,153
-infinite_well,QST_blocks,2
-infinite_well,QFT_extension_controlled_phases_per_QST,28
-infinite_well,kinetic_quadratic_phase_controlled_phases,15
-infinite_well,estimated_cx,142
+harmonic_oscillator,rz,195
+infinite_well,barrier,2
+infinite_well,cx,198
+infinite_well,rx,8
+infinite_well,ry,16
+infinite_well,rz,190

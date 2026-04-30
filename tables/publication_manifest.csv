@@ -1,4 +1,5 @@
 path,exists,source_notebook
+notebooks/00_common_qft_split_functions.ipynb,True,manual
 figures/harmonic_density_snapshots.png,True,01_harmonic_oscillator_qft_split_operator.ipynb
 figures/harmonic_density_snapshots.pdf,True,01_harmonic_oscillator_qft_split_operator.ipynb
 figures/harmonic_fidelity_vs_time.png,True,01_harmonic_oscillator_qft_split_operator.ipynb
