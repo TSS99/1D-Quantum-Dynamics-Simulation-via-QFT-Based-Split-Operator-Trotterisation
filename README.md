@@ -40,7 +40,7 @@ F
 e^{-iV\Delta t/(2\hbar)} ,
 $$
 
-where \(F\) is the Fourier-family transform used by the grid representation. For the harmonic oscillator, \(F\) is the periodic QFT/FFT transform. For the infinite well, \(F\) is the Dirichlet sine-transform/QST representation compatible with hard-wall boundaries.
+where $F$ is the Fourier-family transform used by the grid representation. For the harmonic oscillator, $F$ is the periodic QFT/FFT transform. For the infinite well, $F$ is the Dirichlet sine-transform/QST representation compatible with hard-wall boundaries.
 
 The exact reference solution is computed by eigenstate expansion,
 
@@ -82,11 +82,11 @@ $$
 E_n = \hbar\omega\left(n+\frac{1}{2}\right).
 $$
 
-Default simulation parameters are stored near the top of `01_harmonic_oscillator_qft_split_operator.ipynb`: \(N=64\), \(x\in[-8,8)\), \(\hbar=m=\omega=1\), \(t_{\max}=2\pi\), and `r = 100`.
+Default simulation parameters are stored near the top of `01_harmonic_oscillator_qft_split_operator.ipynb`: $N=64$, $x\in[-8,8)$, $\hbar=m=\omega=1$, $t_{\max}=2\pi$, and `r = 100`.
 
 ## Infinite Potential Well
 
-The infinite-well domain is \(x\in(0,L)\) with Dirichlet boundary conditions. The initial state is a sine-windowed Gaussian,
+The infinite-well domain is $x\in(0,L)$ with Dirichlet boundary conditions. The initial state is a sine-windowed Gaussian,
 
 $$
 \psi(x,0)
@@ -104,7 +104,7 @@ $$
 E_n=\frac{\hbar^2\pi^2n^2}{2mL^2}.
 $$
 
-Default simulation parameters are stored near the top of `02_infinite_well_qft_split_operator.ipynb`: \(L=10\), \(N=64\), \(\hbar=m=1\), \(t_{\max}=6\), and `r = 100`.
+Default simulation parameters are stored near the top of `02_infinite_well_qft_split_operator.ipynb`: $L=10$, $N=64$, $\hbar=m=1$, $t_{\max}=6$, and `r = 100`.
 
 A periodic QFT represents periodic boundary conditions. The infinite-well notebook therefore uses the sine-transform/QST route, which is the Fourier-family transform matched to Dirichlet hard walls. Since the ideal well has zero interior potential, the step-count sweep mainly changes repeated-circuit resource cost; the fidelity curve is expected to remain nearly flat.
 
