@@ -101,7 +101,7 @@ The resource tables are combined with the fidelity sweeps to generate fidelity-v
 Create and activate a local virtual environment:
 
 ```powershell
-cd "D:\CDAC Projects\Simulating_1D_Sytems_Trotterization\EPJ Plus paper\Codex"
+cd "choose the directory path"
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
