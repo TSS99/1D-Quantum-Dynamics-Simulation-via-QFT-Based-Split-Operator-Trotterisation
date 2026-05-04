@@ -31,13 +31,7 @@ All executable scientific code is kept inside notebooks. Shared functions live i
 The split-operator step uses the second-order symmetric form
 
 $$
-U_2(\Delta t)
-=
-e^{-iV\Delta t/(2\hbar)}
-F^{-1}
-e^{-iT\Delta t/\hbar}
-F
-e^{-iV\Delta t/(2\hbar)} ,
+U_2(\Delta t) = e^{-iV\Delta t/(2\hbar)} F^{-1} e^{-iT\Delta t/\hbar} F e^{-iV\Delta t/(2\hbar)} ,
 $$
 
 where $F$ is the Fourier-family transform used by the grid representation. For the harmonic oscillator, $F$ is the periodic QFT/FFT transform. For the infinite well, $F$ is the Dirichlet sine-transform/QST representation compatible with hard-wall boundaries.
@@ -45,24 +39,13 @@ where $F$ is the Fourier-family transform used by the grid representation. For t
 The exact reference solution is computed by eigenstate expansion,
 
 $$
-\psi_{\mathrm{ref}}(x,t)
-=
-\sum_n c_n \phi_n(x)\,e^{-iE_n t/\hbar},
-\qquad
-c_n =
-\int \phi_n^*(x)\psi(x,0)\,dx .
+\psi_{\mathrm{ref}}(x,t) = \sum_n c_n \phi_n(x)\,e^{-iE_n t/\hbar}, \qquad c_n = \int \phi_n^*(x)\psi(x,0)\,dx .
 $$
 
 The reported fidelity is
 
 $$
-\mathcal{F}(t)
-=
-\left|
-\Delta x \sum_j
-\psi_{\mathrm{ref}}^*(x_j,t)\,
-\psi_{\mathrm{split}}(x_j,t)
-\right|^2 .
+\mathcal{F}(t) = \left| \Delta x \sum_j \psi_{\mathrm{ref}}^*(x_j,t)\, \psi_{\mathrm{split}}(x_j,t) \right|^2 .
 $$
 
 ## Harmonic Oscillator
@@ -70,10 +53,7 @@ $$
 The harmonic oscillator Hamiltonian is
 
 $$
-H =
-\frac{p^2}{2m}
-+
-\frac{1}{2}m\omega^2x^2 .
+H = \frac{p^2}{2m} + \frac{1}{2}m\omega^2x^2 .
 $$
 
 The reference spectrum uses analytical Hermite-function eigenstates with
@@ -89,11 +69,7 @@ Default simulation parameters are stored near the top of `01_harmonic_oscillator
 The infinite-well domain is $x\in(0,L)$ with Dirichlet boundary conditions. The initial state is a sine-windowed Gaussian,
 
 $$
-\psi(x,0)
-\propto
-\exp\left[-\frac{(x-x_0)^2}{4\sigma^2}\right]
-e^{ik_0(x-x_0)}
-\sin\left(\frac{\pi x}{L}\right),
+\psi(x,0) \propto \exp\left[-\frac{(x-x_0)^2}{4\sigma^2}\right] e^{ik_0(x-x_0)} \sin\left(\frac{\pi x}{L}\right),
 $$
 
 so that it is compatible with the hard-wall boundaries. The exact reference uses
